@@ -1,49 +1,51 @@
 #include "pico/stdlib.h"
-#include "hardware/adc.h"
 
-#define LED_PIN 15       // Onboard LED pin
-#define JOYSTICK_X_PIN 26 // Assuming joystick X-axis is connected to ADC0 (GP26)
+// Define GPIO pins for LEDs
+#define LED_PIN_0 7  // Least Significant Bit (LSB)
+#define LED_PIN_1 8
+#define LED_PIN_2 9
+#define LED_PIN_3 10  // Most Significant Bit (MSB)
+
+void display_binary(uint8_t number) {
+    // Set each LED according to the bit value in the number
+    gpio_put(LED_PIN_0, number & 0b0001);  // LSB
+    gpio_put(LED_PIN_1, number & 0b0010);
+    gpio_put(LED_PIN_2, number & 0b0100);
+    gpio_put(LED_PIN_3, number & 0b1000);  // MSB
+}
 
 int main() {
-    // Initialize stdio and the LED pin
+    // Initialize the GPIO subsystem
     stdio_init_all();
-    gpio_init(LED_PIN);
-    gpio_set_dir(LED_PIN, GPIO_OUT);
 
-    // Initialize ADC for joystick
-    adc_init();
-    adc_gpio_init(JOYSTICK_X_PIN); // Initialize ADC pin for joystick
-    adc_select_input(0);           // Select ADC channel 0 (corresponding to GP26)
+    // Initialize GPIO pins for LEDs as outputs
+    gpio_init(LED_PIN_0);
+    gpio_set_dir(LED_PIN_0, GPIO_OUT);
 
-    // Infinite loop to read the joystick and control the LED
-    while (1) {
-        // Read the joystick position (analog signal)
-        uint16_t joystick_value = adc_read(); // Get 12-bit value (0-4095)
+    gpio_init(LED_PIN_1);
+    gpio_set_dir(LED_PIN_1, GPIO_OUT);
 
-        // Convert the joystick value to a PWM duty cycle (0-255 for 8-bit PWM)
-        uint8_t brightness = joystick_value >> 4; // Dividing by 16 to convert to 8-bit
+    gpio_init(LED_PIN_2);
+    gpio_set_dir(LED_PIN_2, GPIO_OUT);
 
-        // Control LED brightness using PWM technique (simple on/off toggling)
-        for (int i = 0; i < 255; i++) {
-            if (i < brightness) {
-                gpio_put(LED_PIN, 1); // Turn LED ON
-            } else {
-                gpio_put(LED_PIN, 0); // Turn LED OFF
-            }
-        }
+    gpio_init(LED_PIN_3);
+    gpio_set_dir(LED_PIN_3, GPIO_OUT);
 
-        // Print the LED state and brightness level
-        if (brightness > 0) {
-            printf("LED is ON, Brightness Level: %d/255\n", brightness);
-        } else {
-            printf("LED is OFF\n");
-        }
+    uint8_t count = 0;
 
-        // Add a small delay to avoid too fast toggling
-        sleep_ms(500); // Increased delay to make the output readable
+    while (true) {
+        // Display the binary representation of the count
+        display_binary(count);
+
+        // Print the binary number to the console (for verification)
+        printf("Binary count: %04b\n", count);
+
+        // Increment the count and wrap around at 16 (for 4 LEDs)
+        count = (count + 1) % 16;
+
+        // Wait for 1 second before the next count
+        sleep_ms(1000);
     }
 
     return 0;
 }
-
-

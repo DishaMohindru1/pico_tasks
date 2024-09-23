@@ -1,27 +1,33 @@
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.19)
 
-# Initialize the SDK based on PICO_SDK_PATH
+# Set CMake policies to enable IN_LIST operator
+cmake_policy(SET CMP0057 NEW)
+
+# Set compilers explicitly
+set(CMAKE_C_COMPILER /usr/bin/arm-none-eabi-gcc)
+set(CMAKE_CXX_COMPILER /usr/bin/arm-none-eabi-g++)
+set(CMAKE_ASM_COMPILER /usr/bin/arm-none-eabi-gcc)
+
+# Include the SDK
 include($ENV{PICO_SDK_PATH}/external/pico_sdk_import.cmake)
 
-project(blink_project)
+# Define the project
+project(task_2)
 
 # Initialize the Raspberry Pi Pico SDK
 pico_sdk_init()
 
-# Create an executable for the blink project
-add_executable(blink
-    main.c
-)
+# Create an executable for the task_2 project
+add_executable(task_2 main.c)
 
-# Link the pico_stdlib and hardware_adc libraries
-target_link_libraries(blink
-    pico_stdlib    # Standard functions
-    hardware_adc   # ADC functionality for reading analog values
-)
+# Link the required libraries
+target_link_libraries(task_2 pico_stdlib)
 
-# Enable USB output, disable UART output (optional, depending on your setup)
-pico_enable_stdio_usb(blink 1)
-pico_enable_stdio_uart(blink 0)
+# Enable USB output (for serial console over USB)
+pico_enable_stdio_usb(task_2 1)
 
-# Create map/bin/hex/uf2 files
-pico_add_extra_outputs(blink)
+# Disable UART output (if not needed)
+pico_enable_stdio_uart(task_2 0)
+
+# Create map/bin/hex/uf2 files to allow flashing the Raspberry Pi Pico
+pico_add_extra_outputs(task_2)
